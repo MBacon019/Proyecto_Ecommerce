@@ -1,0 +1,184 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Tu Carrito de Compras - HelmetStore{% endblock %}
+
+{% block content %}
+<div class="container my-5"> {# Contenedor principal con margen vertical #}
+    <div class="row justify-content-center">
+        <div class="col-lg-10"> {# Columna central para el contenido del carrito #}
+            <h2 class="mb-4 text-center text-primary fw-bold">Tu Carrito de Compras</h2> {# Título centrado y con color #}
+
+            {% if messages %}
+            <div class="alert-container mb-4"> {# Contenedor para mensajes #}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show text-center" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if items %}
+                <div class="card shadow-sm p-4 mb-4"> {# Tarjeta para el contenido del carrito #}
+                    <div class="table-responsive"> {# Para tablas grandes en pantallas pequeñas #}
+                        <table class="table table-hover align-middle"> {# Tabla más interactiva y alineada verticalmente #}
+                            <thead class="table-light"> {# Encabezado de tabla con fondo claro #}
+                                <tr>
+                                    <th scope="col" class="text-start">Producto</th>
+                                    <th scope="col" class="text-center">Cantidad</th>
+                                    <th scope="col" class="text-end">Subtotal</th>
+                                    <th scope="col" class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td class="d-flex align-items-center"> {# Usar flexbox para alinear imagen y nombre #}
+                                        {% if item.product.image %}
+                                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-thumbnail me-3" style="width: 70px; height: 70px; object-fit: contain;">
+                                        {% else %}
+                                            <img src="{% static 'images/product_placeholder.png' %}" alt="Sin imagen" class="img-thumbnail me-3" style="width: 70px; height: 70px; object-fit: contain;">
+                                        {% endif %}
+                                        <div>
+                                            <a href="{% url 'product_detail' item.product.slug %}" class="fw-bold text-decoration-none text-dark">{{ item.product.name }}</a>
+                                            <p class="text-muted small mb-0">${{ item.product.price|floatformat:2 }} / ud.</p>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        {# Formulario para actualizar cantidad (opcional) #}
+                                        <form action="{% url 'actualizar_cantidad_carrito' item.id %}" method="post" class="d-inline-flex align-items-center">
+                                            {% csrf_token %}
+                                            <input type="number" name="cantidad" value="{{ item.cantidad }}" min="1" max="{{ item.product.stock }}" class="form-control form-control-sm text-center" style="width: 80px;">
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm ms-2" title="Actualizar cantidad">
+                                                <i class="bi bi-arrow-clockwise"></i> {# Icono de actualizar #}
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td class="text-end fw-bold">${{ item.subtotal|floatformat:2 }}</td> {# Formato de dinero #}
+                                    <td class="text-center">
+                                        <a href="{% url 'eliminar_del_carrito' item.id %}" class="btn btn-danger btn-sm" title="Eliminar producto">
+                                            <i class="bi bi-trash-fill"></i> Eliminar
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> {# Fin table-responsive #}
+
+                    <div class="row mt-4">
+                        <div class="col-md-6 offset-md-6"> {# Columna para el total alineada a la derecha #}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h4 class="mb-0">Total:</h4>
+                                <h3 class="mb-0 text-primary fw-bold">${{ total|floatformat:2 }}</h3> {# Total más grande y con color #}
+                            </div>
+                        </div>
+                    </div>
+                </div> {# Fin card #}
+
+                <div class="d-grid gap-3 d-md-flex justify-content-md-end"> {# Botones alineados a la derecha y con espacio #}
+                    <a href="{% url 'product_list' %}" class="btn btn-outline-secondary btn-lg">
+                        <i class="bi bi-arrow-left-circle me-2"></i> Seguir Comprando
+                    </a>
+                    
+                    <form action="{% url 'confirmar_orden' %}" method="post" class="d-inline-block"> {# Se asegura que el form no rompa el flexbox #}
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-lg" id="btnConfirmar" disabled>
+                            <i class="bi bi-check-circle-fill me-2"></i> Confirmar Orden
+                        </button>
+                    </form>
+
+                    <button class="btn btn-primary btn-lg" id="btnPagar">
+                        <i class="bi bi-credit-card-fill me-2"></i> Proceder al Pago
+                    </button>
+                </div>
+
+            {% else %}
+                <div class="alert alert-info text-center py-4"> {# Mensaje de carrito vacío más atractivo #}
+                    <p class="lead mb-0">¡Tu carrito de compras está vacío!</p>
+                    <p class="mb-0">Explora nuestros productos y encuentra tu próximo equipamiento.</p>
+                    <a href="{% url 'product_list' %}" class="btn btn-primary mt-3">Ver Productos</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const btnConfirmar = document.getElementById("btnConfirmar");
+        const btnPagar = document.getElementById("btnPagar");
+
+        if (btnPagar && btnConfirmar) { // Asegurarse de que los elementos existen antes de añadir listeners
+            btnPagar.addEventListener("click", function () {
+                // Lógica de "Proceder al Pago"
+                // En una aplicación real, aquí integrarías pasarelas de pago (Stripe, PayPal, etc.)
+                // Una vez que el pago se procesa o se redirige, podrías considerar habilitar el botón de confirmar.
+
+                // Simulamos una acción de "pago"
+                alert("Redireccionando a la pasarela de pago (simulado)..."); 
+                
+                // En un escenario real, si el pago es exitoso, podrías:
+                // 1. Redirigir a una página de confirmación con el botón de confirmar ya habilitado.
+                // 2. Usar AJAX para habilitar el botón "Confirmar Orden" si el pago es en la misma página.
+                
+                // Para este ejemplo, solo habilitamos el botón de confirmar después de simular el pago.
+                btnConfirmar.disabled = false;
+                
+                // Opcional: Cambiar el estado del botón "Proceder al Pago"
+                btnPagar.innerText = "Pago Iniciado";
+                btnPagar.classList.remove("btn-primary");
+                btnPagar.classList.add("btn-warning");
+                btnPagar.disabled = true;
+            });
+        }
+    });
+</script>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Estilos específicos para la página del carrito */
+    .table thead th {
+        border-bottom: 2px solid var(--primary-color);
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #eee;
+    }
+
+    .table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+
+    .img-thumbnail {
+        border: 1px solid #ddd;
+        border-radius: 0.25rem;
+    }
+
+    /* Ajustes para el input de cantidad dentro de la tabla */
+    td form.d-inline-flex .form-control {
+        border-color: #ced4da;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    td form.d-inline-flex .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(26, 62, 114, 0.25); /* Sombra con el color primario */
+    }
+
+    .btn-outline-secondary:hover {
+        color: white !important;
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<div class="alert alert-danger mt-4">
+    <h4>No hay suficiente stock disponible para el producto: {{ producto.name }}</h4>
+    <p>Intenta con una cantidad menor o vuelve más tarde.</p>
+    <a href="{% url 'ver_carrito' %}" class="btn btn-primary mt-3">Volver al carrito</a>
+</div>
+{% endblock %}

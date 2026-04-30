@@ -1,0 +1,37 @@
+{% extends 'store/base.html' %}
+{% block title %}Editar Stock - HelmetStore{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Editar Stock de Productos</h2>
+    <form method="POST" class="mt-4">
+        {% csrf_token %}
+        {% for category in categories %}
+            <h4>{{ category.name }}</h4>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Stock Actual</th>
+                        <th>Nuevo Stock</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in category.products.all %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.stock }}</td>
+                        <td>
+                            <input type="number" name="stock_{{ product.id }}" min="0" value="{{ product.stock }}" class="form-control" required>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% empty %}
+            <p>No hay categorías o productos disponibles.</p>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+    </form>
+</div>
+{% endblock %}

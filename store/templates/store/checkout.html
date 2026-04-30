@@ -1,0 +1,70 @@
+{% extends 'store/base.html' %} {# Extiende tu plantilla base para heredar estilos y navegación #}
+{% load static %} {# Aunque no se use directamente aquí, es una buena práctica incluirlo #}
+
+{% block content %}
+<div class="container my-5"> {# Añade un margen vertical para mejor espaciado #}
+    <h2 class="text-center mb-4">Resumen de Tu Pedido</h2> {# Título centrado #}
+    <hr>
+
+    {% if items %} {# Muestra la tabla solo si hay productos en el carrito #}
+        <div class="card mb-4"> {# Agrupa el contenido de la tabla en una tarjeta Bootstrap #}
+            <div class="card-body">
+                <h4 class="card-title">Detalles de la Orden</h4>
+                <div class="table-responsive"> {# Hace la tabla responsive en pantallas pequeñas #}
+                    <table class="table table-hover"> {# table-hover añade un efecto al pasar el mouse sobre las filas #}
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-center">Cantidad</th> {# Centra la cantidad #}
+                                <th class="text-right">Precio Unitario</th> {# Alinea precio a la derecha #}
+                                <th class="text-right">Subtotal</th> {# Alinea subtotal a la derecha #}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td>{{ item.product.name }}</td>
+                                <td class="text-center">{{ item.cantidad }}</td>
+                                <td class="text-right">${{ item.precio|floatformat:2 }}</td> {# Formato de moneda con 2 decimales #}
+                                <td class="text-right">${{ item.subtotal|floatformat:2 }}</td> {# Formato de moneda con 2 decimales #}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-right"><strong>Total a Pagar:</strong></td>
+                                <td class="text-right"><strong>${{ total|floatformat:2 }}</strong></td> {# Formato de moneda con 2 decimales #}
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {# Formulario para confirmar la orden #}
+        <form action="{% url 'confirmar_orden' %}" method="post" class="text-center"> {# La acción apunta a la vista de confirmación #}
+            {% csrf_token %}
+            {# Si necesitas un campo para añadir una nota o dirección, puedes incluirlo aquí. Por ejemplo: #}
+            {# <div class="form-group mb-3">
+                <label for="id_nota" class="form-label">Nota para el pedido (opcional):</label>
+                <textarea name="nota" id="id_nota" rows="3" class="form-control" placeholder="Ej: Entregar por la tarde o instrucciones especiales."></textarea>
+            </div> #}
+
+            <button type="submit" class="btn btn-success btn-lg mt-3"> {# Botón más grande con margen superior #}
+                <i class="bi bi-check-circle-fill"></i> Confirmar Pedido {# Icono de Bootstrap para confirmar #}
+            </button>
+            <a href="{% url 'ver_carrito' %}" class="btn btn-secondary btn-lg mt-3 ms-3"> {# Botón más grande con margen superior y a la izquierda #}
+                <i class="bi bi-arrow-left-circle-fill"></i> Volver al Carrito {# Icono de Bootstrap para volver #}
+            </a>
+        </form>
+    {% else %}
+        {# Mensaje si el carrito está vacío #}
+        <div class="alert alert-info text-center" role="alert">
+            Tu carrito está vacío. ¡<a href="{% url 'product_list' %}" class="alert-link">Explora nuestros productos</a> para añadir algo!
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'product_list' %}" class="btn btn-primary btn-lg">Ir a la Tienda</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock content %}

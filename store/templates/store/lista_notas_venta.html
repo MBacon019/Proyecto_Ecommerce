@@ -1,0 +1,36 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Notas de Venta</h2>
+
+    {% if ordenes %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Total</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for orden in ordenes %}
+                <tr>
+                    <td>{{ orden.id }}</td>
+                    <td>{{ orden.usuario.username }}</td>
+                    <td>${{ orden.total }}</td>
+                    <td>{{ orden.fecha|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <a href="{% url 'nota_venta' orden.id %}" class="btn btn-sm btn-primary">Ver Nota</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay notas de venta registradas.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Perfil - HelmetStore{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Perfil de {{ user.username }}</h2>
+    <p><strong>Correo electrónico:</strong> {{ user.email }}</p>
+    <p><strong>Fecha de creación:</strong> {{ user.date_joined }}</p>
+    <a href="{% url 'logout' %}" class="btn btn-danger mt-3">Cerrar sesión</a>
+</div>
+{% endblock %}

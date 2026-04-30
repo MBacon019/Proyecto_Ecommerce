@@ -1,0 +1,101 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if current_category %}
+        {{ current_category.name }} - HelmetStore
+    {% else %}
+    HelmetStore
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <h4>Categorías</h4>
+            <ul class="list-group">
+                 <a href="{% url 'product_list' %}" class="list-group-item list-group-item-action {% if not current_category %}active{% endif %}">
+                    Todos los Productos
+                </a>
+                {% for category in all_categories %} <a href="{% url 'product_list_by_category' category.slug %}"
+                       class="list-group-item list-group-item-action {% if current_category.slug == category.slug %}active{% endif %}">
+                        {{ category.name }}
+                    </a>
+                {% endfor %}
+            </ul>
+            </div>
+
+        <div class="col-lg-9">
+            <h1 class="mb-4">
+                {% if current_category %}
+                    {{ current_category.name }}
+                {% else %}
+                    Todos los Productos
+                {% endif %}
+            </h1>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for product in products %} <div class="col">
+                        <div class="card h-100">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: contain; padding: 10px;">
+                            {% else %}
+                                <img src="{% static 'images/product_placeholder.png' %}" class="card-img-top" alt="Producto" style="height: 200px; object-fit: contain; padding: 10px;">
+                            {% endif %}
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">{{ product.name }}</h5>
+                                <p class="card-text text-muted flex-grow-1">{{ product.description|truncatewords:15 }}</p>
+                                <p class="card-text fs-5 fw-bold text-end">${{ product.price|floatformat:2 }}</p>
+                                <a href="{% url 'product_detail' product.slug %}" class="btn btn-primary mt-auto">Ver Detalles</a>
+
+                                <!-- FORMULARIO PARA AGREGAR AL CARRITO -->
+                                <form action="{% url 'agregar_al_carrito' product.id %}" method="post" class="mt-2 d-flex align-items-center gap-2">
+                                    {% csrf_token %}
+                                    <input 
+                                        type="number" 
+                                        name="quantity" 
+                                        value="1" 
+                                        min="1" 
+                                        max="{{ product.stock }}" 
+                                        style="width: 60px;"
+                                        required
+                                    >
+                                    <button type="submit" class="btn btn-success btn-sm">Agregar al carrito</button>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <p>No se encontraron productos en esta categoría.</p>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if is_paginated %}
+                <nav aria-label="Page navigation" class="mt-5">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+                        {% endif %}
+
+                        {% for i in paginator.page_range %}
+                            {% if page_obj.number == i %}
+                                <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
+                            {% else %}
+                                <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a></li>
+                        {% else %}
+                             <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

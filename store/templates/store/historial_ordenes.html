@@ -1,0 +1,112 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if es_admin_o_staff %}
+        Historial de Todas las Órdenes - HelmetStore
+    {% else %}
+        Mi Historial de Órdenes - HelmetStore
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            {% if es_admin_o_staff %}
+                <h2 class="mb-4 text-center text-primary fw-bold">Historial de Todas las Órdenes</h2>
+            {% else %}
+                <h2 class="mb-4 text-center text-primary fw-bold">Mi Historial de Órdenes</h2>
+            {% endif %}
+
+            {% if messages %}
+            <div class="alert-container mb-4">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show text-center" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if ordenes %}
+                <div class="accordion" id="accordionOrderHistory">
+                    {% for orden in ordenes %}
+                    <div class="accordion-item mb-3 shadow-sm">
+                        <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ forloop.counter }}">
+                                <div class="d-flex justify-content-between w-100 pe-3">
+                                    <span>
+                                        <strong>Orden #{{ orden.id }}</strong> - {{ orden.fecha|date:"d M Y H:i" }}
+                                        {% if es_admin_o_staff %} {# Solo muestra el cliente si es vista de admin/bodega #}
+                                            <small class="text-muted ms-2">(Cliente: <strong>{{ orden.usuario.username }}</strong>)</small>
+                                        {% endif %}
+                                    </span>
+                                    <span class="fw-bold text-primary">${{ orden.total|floatformat:2 }}</span>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#accordionOrderHistory">
+                            <div class="accordion-body bg-light">
+                                <h5>Detalles de la Orden #{{ orden.id }}</h5>
+                                <p><strong>Estado:</strong> <span class="badge bg-success">Completada</span></p>
+                                <p><strong>Total pagado:</strong> <span class="fw-bold text-primary">${{ orden.total|floatformat:2 }}</span></p>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered mt-3">
+                                        <thead>
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th class="text-center">Cantidad</th>
+                                                <th class="text-end">Precio Unitario</th>
+                                                <th class="text-end">Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in orden.itemorden_set.all %} {# Asegúrate de usar el related_name correcto aquí #}
+                                            <tr>
+                                                <td>{{ item.product.name }}</td>
+                                                <td class="text-center">{{ item.cantidad }}</td>
+                                                <td class="text-end">${{ item.precio|floatformat:2 }}</td>
+                                                <td class="text-end">${{ item.subtotal|floatformat:2 }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="text-end mt-3">
+                                    <a href="{% url 'nota_venta' orden.id %}" class="btn btn-outline-primary btn-sm">Ver Nota de Venta Completa</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center py-4">
+                    <p class="lead mb-0">
+                        {% if es_admin_o_staff %}
+                            No hay órdenes registradas en el sistema.
+                        {% else %}
+                            No tienes órdenes previas.
+                        {% endif %}
+                    </p>
+                    <p class="mb-0">
+                        {% if not es_admin_o_staff %}
+                            ¡Explora nuestros productos y haz tu primera compra!
+                            <a href="{% url 'product_list' %}" class="btn btn-primary mt-3">Ver Productos</a>
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+
+            <div class="text-center mt-5">
+                <a href="{% url 'home' %}" class="btn btn-secondary btn-lg">
+                    <i class="bi bi-house-door-fill me-2"></i> Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
