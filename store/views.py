@@ -36,10 +36,10 @@ class CustomUserCreationForm(UserCreationForm):
         tipo_usuario = cleaned_data.get('tipo_usuario')
         rol_password = cleaned_data.get('rol_password')
 
-        # Definir las contraseñas válidas para roles especiales
+        # Definir las contraseñas válidas para roles especiales (definidas en .env)
         PASSWORDS_POR_ROL = {
-            'bodega': 'CLAVE_BODEGA123',
-            'admin': 'CLAVE_ADMIN456'
+            'bodega': settings.ROL_PASSWORD_BODEGA,
+            'admin': settings.ROL_PASSWORD_ADMIN,
         }
 
         if tipo_usuario in PASSWORDS_POR_ROL:
