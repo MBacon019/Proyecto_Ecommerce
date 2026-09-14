@@ -275,7 +275,7 @@ def confirmar_orden(request):
 
         except Carrito.DoesNotExist:
             messages.error(request, "No tienes un carrito activo.")
-            return redirect('product_list_view') # Redirige a la lista de productos
+            return redirect('product_list') # Redirige a la lista de productos
         except Exception as e:
             messages.error(request, f"Ocurrió un error al procesar tu orden: {e}")
             return redirect('ver_carrito')
@@ -293,12 +293,13 @@ def orden_confirmada(request, orden_id):
         'items': items,
     })
     
-# --- CAMBIOS AQUÍ: Función auxiliar para verificar si es staff o superusuario ---
+# --- Función de test para user_passes_test ---
 def is_staff_or_admin(user):
-    """
-    Verifica si el usuario es staff (personal de bodega) o superusuario (administrador).
-    """
-    return user.is_staff or user.is_superuser
+    # Verifica si el usuario está autenticado y tiene un perfil
+    if not user.is_authenticated or not hasattr(user, 'profile'):
+        return False
+    # Verifica si el tipo_usuario es 'admin' o 'bodega'
+    return user.profile.tipo_usuario in ['admin', 'bodega']
 
 # --- CAMBIOS AQUÍ: Vista de Historial de Órdenes para CLIENTES ---
 @login_required
@@ -388,14 +389,6 @@ def editar_stock(request):
 
 
 # --- LISTA DE NOTAS DE VENTA (ahora muestra solo para admin/bodega y usa el mismo criterio que historial_ordenes_admin) ---
-# --- Función de test para user_passes_test ---
-def is_staff_or_admin(user):
-    # Verifica si el usuario está autenticado y tiene un perfil
-    if not user.is_authenticated or not hasattr(user, 'profile'):
-        return False
-    # Verifica si el tipo_usuario es 'admin' o 'bodega'
-    return user.profile.tipo_usuario in ['admin', 'bodega']
-
 # --- Tu vista lista_notas_venta (ya la tienes, pero la incluyo para contexto) ---
 @login_required
 @user_passes_test(is_staff_or_admin, login_url='home') # Se redirige a 'home' si no pasa el test
