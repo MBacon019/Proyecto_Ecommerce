@@ -15,6 +15,7 @@ from django.urls import reverse
 from django.core.exceptions import PermissionDenied
 from django.contrib.admin.views.decorators import staff_member_required # No lo usaremos directamente en esta solución, pero está bien tenerlo si lo usas en otro lado
 from django.utils import timezone # Necesario para timezone.now()
+from django.core.paginator import Paginator
 
 
 # ---------- FORMULARIO PERSONALIZADO (NO CAMBIA) ----------
@@ -143,10 +144,18 @@ def product_list_view(request, category_slug=None):
     if category_slug:
         category = get_object_or_404(Category, slug=category_slug)
         products = products.filter(category=category)
+
+    paginator = Paginator(products, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'current_category': category,
         'all_categories': categories,
-        'products': products,
+        'products': page_obj,
+        'page_obj': page_obj,
+        'paginator': paginator,
+        'is_paginated': page_obj.has_other_pages(),
     }
     return render(request, 'store/product_list.html', context)
 
