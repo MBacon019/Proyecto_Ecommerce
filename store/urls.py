@@ -32,6 +32,7 @@ urlpatterns = [
     path('orden-confirmada/<int:orden_id>/', views.orden_confirmada, name='orden_confirmada'),
     path('ordenes/historial/', views.historial_ordenes, name='historial_ordenes'),
     path('ordenes/admin/', views.historial_ordenes_admin, name='historial_ordenes_admin'),
+    path('ordenes/<int:orden_id>/cambiar-estado/', views.cambiar_estado_orden, name='cambiar_estado_orden'),
 
 
     # Nota de venta (factura)

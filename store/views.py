@@ -16,6 +16,7 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.admin.views.decorators import staff_member_required # No lo usaremos directamente en esta solución, pero está bien tenerlo si lo usas en otro lado
 from django.utils import timezone # Necesario para timezone.now()
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_POST
 
 
 # ---------- FORMULARIO PERSONALIZADO (NO CAMBIA) ----------
@@ -350,6 +351,28 @@ def historial_ordenes_admin(request):
     }
     # Reutilizamos la misma plantilla historial_ordenes.html
     return render(request, 'store/historial_ordenes.html', context)
+
+
+@login_required
+@user_passes_test(is_staff_or_admin)
+@require_POST
+def cambiar_estado_orden(request, orden_id):
+    """
+    Permite a admin/bodega actualizar el estado de una orden desde la UI,
+    sin pasar por el admin de Django.
+    """
+    orden = get_object_or_404(Orden, id=orden_id)
+    nuevo_estado = request.POST.get('estado')
+    estados_validos = dict(Orden.ESTADO_CHOICES)
+
+    if nuevo_estado not in estados_validos:
+        messages.error(request, "Estado inválido.")
+    else:
+        orden.estado = nuevo_estado
+        orden.save()
+        messages.success(request, f"El estado de la Orden #{orden.id} se actualizó a '{estados_validos[nuevo_estado]}'.")
+
+    return redirect('historial_ordenes_admin')
 
 
 @login_required

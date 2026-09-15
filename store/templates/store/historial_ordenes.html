@@ -64,6 +64,17 @@
                                     {% elif orden.estado == 'entregado' %}bg-success
                                     {% elif orden.estado == 'cancelado' %}bg-danger
                                     {% endif %}">{{ orden.get_estado_display }}</span></p>
+                                {% if es_admin_o_staff %}
+                                <form method="post" action="{% url 'cambiar_estado_orden' orden.id %}" class="d-flex align-items-center gap-2 mb-3">
+                                    {% csrf_token %}
+                                    <select name="estado" class="form-select form-select-sm" style="max-width: 200px;">
+                                        {% for value, label in orden.ESTADO_CHOICES %}
+                                            <option value="{{ value }}" {% if value == orden.estado %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-primary">Actualizar</button>
+                                </form>
+                                {% endif %}
                                 <p><strong>Total pagado:</strong> <span class="fw-bold text-primary">${{ orden.total|floatformat:2 }}</span></p>
                                 
                                 <div class="table-responsive">
