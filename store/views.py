@@ -257,26 +257,35 @@ def confirmar_orden(request):
                 messages.error(request, "Tu carrito está vacío. No se puede confirmar una orden.")
                 return redirect('ver_carrito')
 
-            # Verificar y reducir stock
+            # Bloquea las filas de Product involucradas (ordenadas por id para
+            # evitar deadlocks entre compras concurrentes) hasta que la
+            # transacción termine, para que dos usuarios no puedan leer y
+            # descontar el mismo stock desactualizado al mismo tiempo.
+            product_ids = items.values_list('product_id', flat=True)
+            productos = Product.objects.select_for_update().filter(id__in=product_ids).order_by('id')
+            productos_por_id = {producto.id: producto for producto in productos}
+
+            # Verificar stock con los datos ya bloqueados
             for item in items:
-                product = item.product
+                product = productos_por_id[item.product_id]
                 if item.cantidad > product.stock:
                     messages.error(request, f"No hay suficiente stock para {product.name}. Disponible: {product.stock}.")
                     return redirect('ver_carrito')
-            
-            total = sum(item.product.price * item.cantidad for item in items)
+
+            total = sum(productos_por_id[item.product_id].price * item.cantidad for item in items)
             orden = Orden.objects.create(usuario=request.user, total=total, fecha=timezone.now()) # Agrega la fecha
-            
+
             for item in items:
+                product = productos_por_id[item.product_id]
                 ItemOrden.objects.create(
                     orden=orden,
-                    product=item.product,
+                    product=product,
                     cantidad=item.cantidad,
-                    precio=item.product.price
+                    precio=product.price
                 )
                 # Reducir stock DESPUÉS de asegurar que la orden se puede crear
-                item.product.stock -= item.cantidad
-                item.product.save()
+                product.stock -= item.cantidad
+                product.save()
 
             items.delete() # Vaciar carrito
             messages.success(request, "¡Orden confirmada con éxito!")
