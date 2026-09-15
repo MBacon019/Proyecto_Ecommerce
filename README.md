@@ -22,6 +22,10 @@ Sustentación de proyecto de desarrollo utilizando **Django** para la gestión i
 ## 🔧 Instalación y Uso
 1. Clonar el repositorio.
 2. Crear un entorno virtual: `python -m venv venv`.
-3. Instalar dependencias: `pip install -r requirements.txt`.
-4. Ejecutar migraciones: `python manage.py migrate`.
-5. Iniciar servidor: `python manage.py runserver`.
+3. Activar el entorno virtual (hacerlo antes de cada comando `manage.py`):
+   - Windows: `venv\Scripts\activate`
+   - Linux/Mac: `source venv/bin/activate`
+4. Instalar dependencias: `pip install -r requirements.txt`.
+5. Copiar `.env.example` a `.env` y completar los valores (SECRET_KEY, DEBUG, claves de rol).
+6. Ejecutar migraciones: `python manage.py migrate`.
+7. Iniciar servidor: `python manage.py runserver`.
