@@ -207,6 +207,7 @@
 
     <section class="info">
         <p><strong>Fecha:</strong> {{ orden.fecha|date:"d M Y H:i" }}</p>
+        <p><strong>Estado:</strong> {{ orden.get_estado_display }}</p>
         {# Muestra el cliente solo si el usuario logueado es admin o bodega #}
         {% if request.user.is_authenticated and request.user.profile %}
             {% if request.user.profile.tipo_usuario == 'admin' or request.user.profile.tipo_usuario == 'bodega' %}
